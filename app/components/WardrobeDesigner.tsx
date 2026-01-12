@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import WardrobeScene from './wardrobe/WardrobeScene';
 import WardrobeTypeSelector from './ui/WardrobeTypeSelector';
 import DimensionsControl from './ui/DimensionsControl';
@@ -12,14 +12,31 @@ import { ArrowUturnLeftIcon, ArrowUturnRightIcon, BookOpenIcon } from '@heroicon
 import useWardrobeStore from '../store/wardrobeStore';
 import { FurnitureType, RoomType } from '../types/wardrobe';
 
+const roomTypeLabels: Record<RoomType, string> = {
+  bedroom: 'Bedroom',
+  kitchen: 'Kitchen',
+  living: 'Living Room',
+  hallway: 'Hallway / Storage',
+  custom: 'Custom',
+};
+
+const furnitureTypeLabels: Record<FurnitureType, string> = {
+  wardrobe: 'Wardrobe',
+  cabinet: 'Cabinet',
+  sideboard: 'Sideboard',
+  shelving: 'Open Shelving',
+};
+
+const furnitureByRoom: Record<RoomType, FurnitureType[]> = {
+  bedroom: ['wardrobe', 'shelving'],
+  kitchen: ['cabinet'],
+  living: ['sideboard', 'shelving'],
+  hallway: ['wardrobe', 'shelving'],
+  custom: ['wardrobe', 'cabinet', 'sideboard', 'shelving'],
+};
+
 const WardrobeDesigner: React.FC = () => {
-  const [leftPanelWidth, setLeftPanelWidth] = useState<number>(66); // Default to 66% (2/3)
-  const [isDesktop, setIsDesktop] = useState<boolean>(false);
-  const [isHoveringResizer, setIsHoveringResizer] = useState<boolean>(false);
-  const [showTooltip, setShowTooltip] = useState<boolean>(true);
   const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
-  const containerRef = useRef<HTMLDivElement>(null);
-  const isDraggingRef = useRef<boolean>(false);
   const {
     undo,
     redo,
@@ -51,29 +68,6 @@ const WardrobeDesigner: React.FC = () => {
   const [combineTargetId, setCombineTargetId] = useState('');
   const [includeDivider, setIncludeDivider] = useState(true);
 
-  const roomTypeLabels: Record<RoomType, string> = {
-    bedroom: 'Bedroom',
-    kitchen: 'Kitchen',
-    living: 'Living Room',
-    hallway: 'Hallway / Storage',
-    custom: 'Custom',
-  };
-
-  const furnitureTypeLabels: Record<FurnitureType, string> = {
-    wardrobe: 'Wardrobe',
-    cabinet: 'Cabinet',
-    sideboard: 'Sideboard',
-    shelving: 'Open Shelving',
-  };
-
-  const furnitureByRoom: Record<RoomType, FurnitureType[]> = {
-    bedroom: ['wardrobe', 'shelving'],
-    kitchen: ['cabinet'],
-    living: ['sideboard', 'shelving'],
-    hallway: ['wardrobe', 'shelving'],
-    custom: ['wardrobe', 'cabinet', 'sideboard', 'shelving'],
-  };
-
   useEffect(() => {
     if (!activeRoom) return;
     const allowed = furnitureByRoom[activeRoom.type];
@@ -93,12 +87,12 @@ const WardrobeDesigner: React.FC = () => {
     } else {
       setCombineTargetId('');
     }
-  }, [activeRoom?.id, activeRoom?.name, activeRoom?.furniture.length, activeFurniture?.id]);
+  }, [activeRoom, activeFurniture]);
 
   useEffect(() => {
     if (!activeFurniture) return;
     setFurnitureNameInput(activeFurniture.name);
-  }, [activeFurniture?.id, activeFurniture?.name]);
+  }, [activeFurniture]);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -112,77 +106,8 @@ const WardrobeDesigner: React.FC = () => {
     }
   }, [loadConfiguration]);
   
-  // Check if we're on desktop
-  useEffect(() => {
-    const checkIfDesktop = () => {
-      setIsDesktop(window.innerWidth >= 1024);
-    };
-    
-    checkIfDesktop();
-    window.addEventListener('resize', checkIfDesktop);
-    
-    return () => {
-      window.removeEventListener('resize', checkIfDesktop);
-    };
-  }, []);
-  
-  // Hide tooltip after 5 seconds
-  useEffect(() => {
-    if (isDesktop) {
-      const timer = setTimeout(() => {
-        setShowTooltip(false);
-      }, 5000);
-      
-      return () => clearTimeout(timer);
-    }
-  }, [isDesktop]);
-  
-  // Use useCallback to memoize the event handlers
-  const handleMouseMove = useCallback((e: MouseEvent) => {
-    if (!isDraggingRef.current || !containerRef.current) return;
-    
-    const containerRect = containerRef.current.getBoundingClientRect();
-    const containerWidth = containerRect.width;
-    const mouseX = e.clientX - containerRect.left;
-    
-    // Calculate percentage (clamped between 30% and 80%)
-    const newWidthPercent = Math.min(Math.max((mouseX / containerWidth) * 100, 30), 80);
-    setLeftPanelWidth(newWidthPercent);
-  }, []);
-  
-  // We need to use a ref for handleMouseMove to avoid circular dependencies
-  const handleMouseMoveRef = useRef(handleMouseMove);
-  
-  // Update the ref when handleMouseMove changes
-  useEffect(() => {
-    handleMouseMoveRef.current = handleMouseMove;
-  }, [handleMouseMove]);
-  
-  const handleMouseUp = useCallback(() => {
-    isDraggingRef.current = false;
-    document.removeEventListener('mousemove', handleMouseMoveRef.current);
-    document.removeEventListener('mouseup', handleMouseUp);
-  }, []);
-  
-  // Handle mouse down on the resize handle
-  const handleMouseDown = useCallback((e: React.MouseEvent) => {
-    e.preventDefault();
-    isDraggingRef.current = true;
-    setShowTooltip(false);
-    document.addEventListener('mousemove', handleMouseMoveRef.current);
-    document.addEventListener('mouseup', handleMouseUp);
-  }, [handleMouseUp]);
-  
-  // Clean up event listeners on unmount
-  useEffect(() => {
-    return () => {
-      document.removeEventListener('mousemove', handleMouseMoveRef.current);
-      document.removeEventListener('mouseup', handleMouseUp);
-    };
-  }, [handleMouseUp]);
-  
   return (
-    <div ref={containerRef} className="min-h-screen bg-[#f7f4ee] text-slate-800">
+    <div className="min-h-screen bg-[#f7f4ee] text-slate-800">
       <div className="px-4 py-4 lg:px-6 lg:py-6">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>

@@ -1,5 +1,7 @@
 // src/utils/cutlistGenerator.ts
 
+import type { WardrobeConfiguration, WardrobeComponent } from "../../types/wardrobe";
+
 export type CutItem = {
   part: string;
   width: number; // mm
@@ -10,10 +12,10 @@ export type CutItem = {
 const CM_TO_MM = 10;
 const PANEL_THICKNESS = 18; // mm
 
-export function generateCutList(config: any): CutItem[] {
+export function generateCutList(config: WardrobeConfiguration): CutItem[] {
   const rawItems: CutItem[] = [];
 
-  config.components.forEach((component: any) => {
+  config.components.forEach((component: WardrobeComponent) => {
     const w = component.dimensions.width * CM_TO_MM;
     const h = component.dimensions.height * CM_TO_MM;
     const d = component.dimensions.depth * CM_TO_MM;

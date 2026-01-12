@@ -38,7 +38,6 @@ const componentTypes = [
 ] as const;
 
 const DIVIDER_GAP = 2;
-const MIN_COMPONENT_WIDTH = 5;
 const DRAWER_VERTICAL_GAP = 0.3;
 
 const getDividerSections = (
@@ -377,7 +376,7 @@ const ComponentsManager: React.FC<{ mode?: ComponentsManagerMode }> = ({ mode = 
   };
   
   // Save edits
-  const handleSaveEdit = (id: string) => {
+  const handleSaveEdit = () => {
     setEditingComponentId(null);
     setEditValues(null);
   };
@@ -1205,7 +1204,7 @@ const ComponentsManager: React.FC<{ mode?: ComponentsManagerMode }> = ({ mode = 
                           {isEditing ? (
                             <div className="flex justify-end space-x-2">
                               <button
-                                onClick={() => handleSaveEdit(component.id)}
+                                onClick={handleSaveEdit}
                                 className="text-green-600 hover:text-green-900"
                               >
                                 <CheckIcon className="h-5 w-5" />

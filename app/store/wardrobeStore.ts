@@ -1240,7 +1240,8 @@ const useWardrobeStore = create<WardrobeState>((set, get) => ({
         state.activeFurnitureId,
         configuration
       );
-      const { [id]: _, ...remainingOpenStates } = state.componentOpenStates;
+      const { [id]: removed, ...remainingOpenStates } = state.componentOpenStates;
+      void removed;
       return {
         project,
         configuration,

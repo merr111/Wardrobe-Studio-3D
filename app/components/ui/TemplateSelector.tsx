@@ -39,7 +39,7 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({ isOpen, onClose }) 
   useEffect(() => {
     if (!activeRoom) return;
     setActiveFilter(activeRoom.type);
-  }, [activeRoom?.id, activeRoom?.type]);
+  }, [activeRoom]);
 
   const handleSelectTemplate = (templateId: string) => {
     setSelectedTemplate(templateId);

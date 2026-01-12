@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { Html } from "@react-three/drei";
+import { Html, Line } from "@react-three/drei";
 import { useFrame, useThree } from "@react-three/fiber";
 import type { ThreeEvent } from "@react-three/fiber";
 import * as THREE from "three";
@@ -1520,22 +1520,12 @@ const DragGuides: React.FC<{
     new THREE.Vector3(position.x, 0, position.z),
     new THREE.Vector3(position.x, bounds.height, position.z),
   ];
-  const lineMaterial = new THREE.LineBasicMaterial({
-    color: "#93c5fd",
-    transparent: true,
-    opacity: 0.6,
-  });
+  const guideColor = "#93c5fd";
 
   return (
     <>
-      <line
-        geometry={new THREE.BufferGeometry().setFromPoints(pointsX)}
-        material={lineMaterial}
-      />
-      <line
-        geometry={new THREE.BufferGeometry().setFromPoints(pointsY)}
-        material={lineMaterial}
-      />
+      <Line points={pointsX} color={guideColor} transparent opacity={0.6} />
+      <Line points={pointsY} color={guideColor} transparent opacity={0.6} />
     </>
   );
 };
@@ -1906,7 +1896,7 @@ const WardrobeModel: React.FC<{
         configRef.current.dimensions.width
       );
 
-      let nextPosition = {
+      const nextPosition = {
         x: targetX,
         y: targetY,
         z: component.position.z,
