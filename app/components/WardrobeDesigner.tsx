@@ -107,7 +107,7 @@ const WardrobeDesigner: React.FC = () => {
   }, [loadConfiguration]);
   
   return (
-    <div className="min-h-screen bg-[#f7f4ee] text-slate-800">
+    <div className="min-h-screen bg-[#f2efe9] text-slate-800">
       <div className="px-4 py-4 lg:px-6 lg:py-6">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
